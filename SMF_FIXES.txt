@@ -1,0 +1,25 @@
+I do think SMF is great software and I enjoy using it.
+With that being said, it seems that the vast majority of an SMF Mod Developer's time is spent troubleshooting and fixing the overwhelming amount of mistakes in SMF.
+Anyone can do a fresh install of SMF 2.0.19 and see that they can't even begin using it in any meaningful way because of all the mistakes with even the most basic functions such as registering and maintaining your username and password.
+Not convinced? On a new install of SMF and using the password \\\'&amp;\"/<a>&!CDATA[[75]] for all of the following actions;
+- Register a new account,
+- Change the account password from the forgot password interface,
+- Change the account password from the account settings for YOUR account NOT AS an admin,
+- Change the account password from the account settings for YOUR account AS an admin,
+- Then change the account password from the account settings for SOMEONE ELSE'S account AS an admin.
+Good luck on figuring it all out without looking at my fixes. Password changes from different areas of the forum will submit different passwords, lock you out of the account, etc.
+There's no way I can be expected to fix everything in SMF that may be required in order for this mod to be fully developed.
+I made the changes to the errors in SMF, which are listed in the install.xml file, to get minimum functionality for the mod. To be clear these are not changes that should even be a part of this mod. These changes are fixes that should be applied to SMF and never removed, regardless of this mod.
+My fixes for SMF are in no way gauranteed to work 100%, as I am not an SMF developer, but they make an unusable forum software usable.
+
+If you are the SMF developer who maintains the membership account info code or the developer who maintains the integration hooks code and want to help, please let me know so that we can get numerous issues fixed and enable the `integrate_delete_member` hook and get the `integrate_nick_change` hook added.
+
+The integration hooks and 3rd party user integration system provided by SMF are illogical.
+The integrate_register hook does NOT include the user_id of the new user with the registration information. This hook sends the username and password of the user to be registered. No problem, we will depend on the username being unique to identify users. The username is what we want to use to identify the user anyway, not the user_id.
+The integrate_reset_pass hook before my fixes was sending a password that was different than the actual password of the user and sending different passwords when set from different places within SMF. The SMF documentation clearly states that it is SUPPOSED to be the password, and why would we want something different? The username IS sent with the password to uniquely identify the user, which makes sense.
+The integrate_delete_member hook sends a user_id to be deleted. However, no user_id of any user has been registered or used by the SMF integration hooks. This hook simply defies all logic and common sense and is sompletely useless. The unique identifier used by SMF to register the user was the username and therefore the username needs to be passed with this hook to know which user to delete.
+The integrate_nick_change hook doesn't even exist. If you are going to use the username as the identity of the user, then a hook needs to be created to know when the username changes. This is VERY important. Obviously, a hook that sends changed data of a user wouldn't be useful and the only meaningful info that would be sent with this hook would be the old username and the new username.
+
+In conclusion, I am probably too stupid to understand what is going on. Please forgive me.
+
+The HubMembersMod.php file needs to be distributed with Unix line endings, because SMF will double the amount of lines of code and do some bullshit with the line endings when installing the mod.

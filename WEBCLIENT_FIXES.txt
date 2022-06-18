@@ -1,0 +1,4 @@
+As far as I, or any webclient developer in the official webclient developer hub know of, this is the only working PHP airdcpp-webclient example that is publicly available.
+This working example is far from being written correctly, has security issues, and should be rewritten by someone who has the time and knowledge to put the entire thing into a class, handle the connection, handle the SSL certs, etc. There is way too much to list. If you want to help me with this, PLEASE do so.
+
+I hope that putting the software here will help someone and maybe even inspire someone to help me develop it.

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE modification SYSTEM "http://www.simplemachines.org/xml/modification">
+<modification xmlns:smf="http://www.simplemachines.org/" xmlns="http://www.simplemachines.org/xml/modification">
+    <id>TwistedTommy:HubMembersMod</id>
+    <version>0.1</version>
+    <file name="$sourcedir/Profile-Modify.php">
+        <operation>
+            <search position="replace"><![CDATA[				// Integration?
+				call_integration_hook('integrate_reset_pass', array($cur_profile['member_name'], $cur_profile['member_name'], $_POST['passwrd1']));
+]]></search>
+            <add><![CDATA[				// Integration?
+				// SMF was sending something different than the actual passwrd1 to this hook!
+				call_integration_hook('integrate_reset_pass', array($cur_profile['member_name'], $cur_profile['member_name'], $actual_passwrd1));
+]]></add>
+        </operation>
+        <operation>
+            <search position="replace"><![CDATA[				// Go then.
+				$passwd = sha1(strtolower($cur_profile['member_name']) . un_htmlspecialchars($_POST['passwrd1']));
+]]></search>
+            <add><![CDATA[				// Go then.
+				// SMF was setting something different than the actual passwd for the member data!
+				// SMF is setting something different than the actual passwd for the cookie too, but I can't be expected to fix all the errors in SMF!
+				$passwd = sha1(strtolower($cur_profile['member_name']) . $actual_passwrd1);
+]]></add>
+        </operation>
+    </file>
+    <file name="$sourcedir/Profile.php">
+        <operation>
+            <search position="replace"><![CDATA[		// Clean up the POST variables.
+]]></search>
+            <add><![CDATA[
+        // Get the actual passwords that the user submitted.
+        // SMF does some bullshit to the POST data that cannot even be undone with SMF's bullshit un_htmlspecialchars() function.
+		if (isset($_POST['passwrd1']))
+			$actual_passwrd1 = $_POST['passwrd1'];
+		if (isset($_POST['oldpasswrd']))
+			$actual_oldpasswrd = $_POST['oldpasswrd'];
+
+		// Clean up the POST variables.
+]]></add>
+        </operation>
+        <operation>
+            <search position="replace"><![CDATA[				// Since the password got modified due to all the $_POST cleaning, lets undo it so we can get the correct password
+				$_POST['oldpasswrd'] = un_htmlspecialchars($_POST['oldpasswrd']);
+]]></search>
+            <add><![CDATA[				// Since the password got modified due to all the $_POST cleaning, lets undo it so we can get the correct password
+				// SMF was trying to undo the bullshit done to the POST data with a function that doesn't undo the bullshit.
+				// SMF was sending something other than the actual oldpasswrd.
+				$_POST['oldpasswrd'] = $actual_oldpasswrd;
+]]></add>
+        </operation>
+        <operation>
+            <search position="replace"><![CDATA[			// If we've changed the password, notify any integration that may be listening in.
+			if (isset($profile_vars['passwd']))
+				call_integration_hook('integrate_reset_pass', array($cur_profile['member_name'], $cur_profile['member_name'], $_POST['passwrd2']));
+
+			updateMemberData($memID, $profile_vars);
+]]></search>
+            <add><![CDATA[			updateMemberData($memID, $profile_vars);
+
+			// If we've changed the password, notify any integration that may be listening in.
+			// SMF was sending something different than the actual passwrd1 to this hook.
+			// SMF sets something different than the actual passwd for the user. UPDATE AGAIN!
+			if (isset($profile_vars['passwd']))
+			{
+				$actual_passwd = sha1(strtolower($cur_profile['member_name']) . $actual_passwrd1);
+				updateMemberData($memID, array('passwd' => $actual_passwd));
+				call_integration_hook('integrate_reset_pass', array($cur_profile['member_name'], $cur_profile['member_name'], $actual_passwrd1));
+			}
+]]></add>
+        </operation>
+    </file>
+    <file name="$themedir/Login.template.php">
+        <operation>
+            <search position="replace"><![CDATA[$context['default_password']]]></search>
+            <add><![CDATA[htmlspecialchars($context['default_password'], ENT_QUOTES)]]></add>
+        </operation>
+        <operation>
+            <search position="replace"><![CDATA[	// Now just get the basic information - username, password, etc.
+]]></search>
+            <add><![CDATA[	// Now just get the basic information - username, password, etc.
+	// SMF was displaying the user's password in clear view, displaying other garbage on the form and submitting something different than the actual password.
+]]></add>
+        </operation>
+    </file>
+</modification>
